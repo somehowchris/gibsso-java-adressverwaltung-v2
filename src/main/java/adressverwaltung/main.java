@@ -14,6 +14,7 @@ import java.util.HashMap;
  * Main operator class
  *
  * @author Christof Weickhardt, Nicola Temporal
+ * @since Release 2
  */
 public class main {
 
@@ -31,11 +32,11 @@ public class main {
             af.setVisible(true);
         }
     }
-    
+
     /**
      * Function to distplay the adress form
      */
-    public static void viewAdressForm() throws SQLException{
+    public static void viewAdressForm() throws SQLException {
         if (af == null) {
             af = new AddressForm();
         }
