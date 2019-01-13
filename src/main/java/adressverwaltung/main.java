@@ -6,6 +6,7 @@
 package adressverwaltung;
 
 import adressverwaltung.forms.AddressForm;
+import adressverwaltung.utils.DotEnv;
 import java.sql.SQLException;
 import java.util.HashMap;
 
@@ -26,7 +27,9 @@ public class main {
      */
     public static void main(String[] args) {
         af = new AddressForm();
-        af.setVisible(true);
+        if (DotEnv.getDotEnv().keySet().contains("DATABASE_USE")) {
+            af.setVisible(true);
+        }
     }
     
     /**
