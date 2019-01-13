@@ -105,10 +105,8 @@ public class MySQLConnection {
             }
             System.out.println("Droped database!");
             return true;
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             throw new CanNotConnectToDatabaseError();
-        } catch (ClassNotFoundException ex) {
-           throw new CanNotConnectToDatabaseError();
         }
     }
 }

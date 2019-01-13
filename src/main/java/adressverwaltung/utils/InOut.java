@@ -17,6 +17,7 @@ import adressverwaltung.enums.DotEnvEnum;
 import adressverwaltung.enums.SystemPropertyEnum;
 import adressverwaltung.errors.DatabaseSelfHealingError;
 import adressverwaltung.errors.WrongSchemaError;
+import adressverwaltung.exports.Export;
 import java.sql.SQLException;
 import adressverwaltung.services.Service;
 
@@ -230,5 +231,33 @@ public class InOut {
      *
      * @throws Exception If not possible to write the export to the chosen
      * location
-     */  
+     */
+    public void exportAll() throws Exception {
+        Export export = new Export(connection);
+        export = export.configure();
+        if (export == null) {
+            return;
+        }
+        export.render();
+        export.write();
+        export.open();
+    }
+
+    /**
+     * Creates an export from the search results
+     *
+     * @param people List of people
+     * @throws Exception If not possible to write the export to the chosen
+     * location
+     */
+    public void exportFromSearch(List<Person> people) throws Exception {
+        Export export = new Export(connection, people);
+        export = export.configure();
+        if (export == null) {
+            return;
+        }
+        export.render();
+        export.write();
+        export.open();
+    }
 }
