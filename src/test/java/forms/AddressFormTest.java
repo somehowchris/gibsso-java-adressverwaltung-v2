@@ -8,6 +8,7 @@ package forms;
 import TestingHelpers.UIUtils;
 import adressverwaltung.enums.DotEnvEnum;
 import adressverwaltung.enums.SystemPropertyEnum;
+import adressverwaltung.errors.CanNotConnectToDatabaseError;
 import adressverwaltung.forms.AddressForm;
 import adressverwaltung.models.Person;
 import adressverwaltung.models.Town;
@@ -94,7 +95,7 @@ public class AddressFormTest {
             fakeKeys.put(DotEnvEnum.TABLE_NAME.get(), "test");
             fakeKeys.put(DotEnvEnum.PORT.get(), db.getConfiguration().getPort() + "");
             io = new InOut(fakeKeys);
-        } catch (ManagedProcessException | SQLException ex) {
+        } catch (ManagedProcessException | SQLException | CanNotConnectToDatabaseError ex) {
             throw new Error("Could not create database on port " + db.getConfiguration().getPort());
         }
 
@@ -107,7 +108,7 @@ public class AddressFormTest {
 
         try {
             af = new AddressForm(io);
-        } catch (SQLException ex) {
+        } catch (SQLException | CanNotConnectToDatabaseError ex) {
             throw new Error("Could not connect to database");
         }
     }
