@@ -6,16 +6,28 @@
 package adressverwaltung.models;
 
 import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
  *
  * @author Chirstof Weickhardt
  */
+@Entity
 public class Town implements Serializable, Comparable<Town> {
+
+    /**
+     * Serial verrsion of uid for primary key
+     */
+    private static final long serialVersionUID = 1L;
 
     /**
      * Primary key of the town object
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long tid;
 
     /**
