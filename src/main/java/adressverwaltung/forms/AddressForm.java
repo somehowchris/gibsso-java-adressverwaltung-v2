@@ -10,6 +10,7 @@ import adressverwaltung.errors.DatabaseSelfHealingError;
 import adressverwaltung.main;
 import adressverwaltung.utils.InOut;
 import adressverwaltung.models.Person;
+import adressverwaltung.models.Town;
 import adressverwaltung.utils.CustomFocusTraversalPolicy;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -41,6 +42,8 @@ public class AddressForm extends javax.swing.JFrame {
     int current = 1;
     boolean search = false;
     List<Person> searchResults;
+    List<Town> towns;
+    Town t;
     long townid;
     HashMap<String, Boolean> validations;
 
@@ -76,6 +79,7 @@ public class AddressForm extends javax.swing.JFrame {
 
         setResizable(false);
 
+        loadTowns();
         this.setFocusTraversalPolicy(new CustomFocusTraversalPolicy(comp));
         count = search ? searchResults.size() : (int) ioLayer.countPeople();
         setPlayerButtons();
@@ -549,6 +553,13 @@ public class AddressForm extends javax.swing.JFrame {
                     cp = new Person();
                 }
 
+                towns = ioLayer.getTowns();
+                if (new Long(cp.getOid() + "") != -1) {
+                    t = ioLayer.getTown(cp.getOid());
+                    if (t != null) {
+                        selectTown(t.getName() + " " + t.getPlz());
+                    }
+                }
                 DefaultListModel dlm = new DefaultListModel();
                 dlm.addElement("Search to get a list of results");
 
@@ -597,6 +608,15 @@ public class AddressForm extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
         jButton2.setText("Search");
         count = search ? searchResults.size() : (int) ioLayer.countPeople();
+        towns = ioLayer.getTowns();
+        if (cp != null) {
+            if (new Long(cp.getOid() + "") != -1) {
+                t = ioLayer.getTown(cp.getOid());
+                if (t != null) {
+                    selectTown(t.getName() + " " + t.getPlz());
+                }
+            }
+        }
         DefaultListModel dlm = new DefaultListModel();
         dlm.addElement("Search to get a list of results");
 
@@ -637,7 +657,20 @@ public class AddressForm extends javax.swing.JFrame {
     }// GEN-LAST:event_jButton4ActionPerformed
 
     private void jPLZActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jPLZActionPerformed
-        
+        if (towns != null) {
+            if (towns.stream().filter(el -> (el.getPlz() + " " + el.getName()).equals(jPLZ.getSelectedItem())).count() == 1) {
+                Optional<Town> ort = towns.stream().filter(el -> (el.getPlz() + " " + el.getName()).equals(jPLZ.getSelectedItem())).findFirst();
+                cp.setOid(new Integer("" + ort.get().getTid()));
+                t = ort.get();
+                townid = t.getTid();
+            } else {
+                if (cp != null) {
+                    cp.setOid(-1);
+                }
+                t = null;
+                townid = -1L;
+            }
+        }
     }// GEN-LAST:event_jPLZActionPerformed
 
     private void jPLZPropertyChange(java.beans.PropertyChangeEvent evt) {// GEN-FIRST:event_jPLZPropertyChange
@@ -675,7 +708,34 @@ public class AddressForm extends javax.swing.JFrame {
         jTelNr.setText(cp.getMobile());
         jEmail.setText(cp.getEmail());
     }
-    
+
+    /**
+     * Function to load and represent all the towns
+     */
+    public void loadTowns() {
+        jPLZ.removeAllItems();
+        jPLZ.addItem("Please select a town");
+        towns = ioLayer.getTowns();
+        towns.sort(Comparator.naturalOrder());
+        ArrayList<String> duplicateFilterList = new ArrayList<>();
+        jPLZ.removeAllItems();
+        jPLZ.addItem("Please select a town");
+        towns.forEach((ort) -> {
+            if (duplicateFilterList.contains(ort.getPlz() + " " + ort.getName()) == false) {
+                jPLZ.addItem(ort.getPlz() + " " + ort.getName());
+                duplicateFilterList.add(ort.getPlz() + " " + ort.getName());
+            }
+        });
+        if (t == null) {
+            if (cp != null) {
+                cp = new Person();
+            }
+            selectTown("Please select a town");
+        } else {
+            selectTown(t.getPlz() + " " + t.getName());
+        }
+    }
+
     /**
      * Function to clear all the inputs
      */
@@ -722,7 +782,18 @@ public class AddressForm extends javax.swing.JFrame {
     private void setPerson(Person p) {
         cp = p;
         showCurrentPerson();
-        p.setOid(-1);
+        if (new Long(cp.getOid() + "") > -1) {
+            t = ioLayer.getTown(cp.getOid());
+            if (t != null) {
+                selectTown(t.getPlz() + " " + t.getName());
+            } else {
+                p.setOid(-1);
+                selectTown("Please select a town");
+            }
+        } else {
+            selectTown("Please select a town");
+        }
+
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -758,6 +829,19 @@ public class AddressForm extends javax.swing.JFrame {
      */
     private void selectTown(String town) {
         jPLZ.setSelectedItem(town);
+    }
+
+    /**
+     * Function to update the town list
+     *
+     * @param id ID of the updated town
+     */
+    public void updateTown(long id) {
+        Town t = ioLayer.getTown(townid);
+        loadTowns();
+        if (t != null) {
+            selectTown(t.getPlz() + " " + t.getName());
+        }
     }
 
     /**
