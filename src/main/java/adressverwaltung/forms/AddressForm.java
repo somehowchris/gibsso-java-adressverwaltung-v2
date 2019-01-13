@@ -5,6 +5,7 @@
  */
 package adressverwaltung.forms;
 
+import adressverwaltung.utils.InOut;
 import adressverwaltung.models.Person;
 import adressverwaltung.utils.CustomFocusTraversalPolicy;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -29,6 +30,7 @@ import org.apache.commons.validator.routines.EmailValidator;
  */
 public class AddressForm extends javax.swing.JFrame {
 
+    InOut ioLayer;
     Person cp;
     int count = 0;
     int current = 1;
@@ -39,10 +41,20 @@ public class AddressForm extends javax.swing.JFrame {
 
     /**
      * Creates new form AdressveraltunsForm
+     *
+     * @param io IO connection to get data from
+     * @throws SQLException throws a exception if needed
+     * @throws CanNotConnectToDatabaseError adressverwaltung.errors.
      */
-    public AddressForm() {
+    public AddressForm(InOut io) throws SQLException {
         initComponents();
         this.setTitle("Adressverwaltung");
+        if (io != null) {
+            ioLayer = io;
+        }
+        if (io == null) {
+            ioLayer = new InOut(null);
+        }
 
         ArrayList<Component> comp = new ArrayList<>();
         comp.add(this.jName);
@@ -56,7 +68,14 @@ public class AddressForm extends javax.swing.JFrame {
         setResizable(false);
 
         this.setFocusTraversalPolicy(new CustomFocusTraversalPolicy(comp));
+        count = search ? searchResults.size() : (int) ioLayer.countPeople();
         setPlayerButtons();
+        if (count > 0) {
+            setPerson(ioLayer.getPeople(1, 0).get(0));
+        } else {
+            cp = new Person();
+            jButton1.doClick();
+        }
 
         validations = new HashMap<>();
         validations.put("Name", false);
@@ -484,11 +503,19 @@ public class AddressForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jPLZItemStateChanged
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton5ActionPerformed
-        
+        if (count >= current || current == count + 1) {
+            current--;
+            setPerson(search ? searchResults.get(current - 1) : ioLayer.getPeople(1, current - 1).get(0));
+            setPlayerButtons();
+        }
     }// GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton6ActionPerformed
-        
+        if (count > current) {
+            current++;
+            setPerson(search ? searchResults.get(current - 1) : ioLayer.getPeople(1, current - 1).get(0));
+            setPlayerButtons();
+        }
     }// GEN-LAST:event_jButton6ActionPerformed
 
     private void jNameActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jNameActionPerformed
@@ -500,19 +527,104 @@ public class AddressForm extends javax.swing.JFrame {
     }// GEN-LAST:event_jVornameActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton2ActionPerformed
-        
+        try {
+            if (search) {
+                search = false;
+                jButton2.setText("Search");
+                count = search ? searchResults.size() : (int) ioLayer.countPeople();
+                setPlayerButtons();
+
+                if (count > 0) {
+                    setPerson(ioLayer.getPeople(1, 0).get(0));
+                } else {
+                    cp = new Person();
+                }
+
+                DefaultListModel dlm = new DefaultListModel();
+                dlm.addElement("Search to get a list of results");
+
+                jList1.setModel(dlm);
+                searchResults = null;
+            } else {
+                searchResults = ioLayer.searchPerson(jVorname.getText(), jName.getText());
+                if (searchResults.size() > 0) {
+                    search = true;
+
+                    if (searchResults.size() > 0) {
+                        count = searchResults.size();
+                        current = 1;
+                        setPerson(searchResults.get(0));
+                        setPlayerButtons();
+                    }
+                    jButton2.setText("Exist search");
+
+                    DefaultListModel dlm = new DefaultListModel();
+                    searchResults.forEach((p) -> {
+                        dlm.addElement(p.getFirstName() + " " + p.getLastName());
+                    });
+                    jList1.setModel(dlm);
+                } else {
+                    JOptionPane.showMessageDialog(null, "No search results round");
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(AddressForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }// GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton3ActionPerformed
-        
+        try {
+            castInputToCurrentPerson();
+            long id = ioLayer.savePerson(cp);
+            setPerson(ioLayer.getPerson(id));
+            count = search ? searchResults.size() : (int) ioLayer.countPeople();
+            setPlayerButtons();
+        } catch (SQLException ex) {
+            Logger.getLogger(AddressForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }// GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
-        
+        jButton2.setText("Search");
+        count = search ? searchResults.size() : (int) ioLayer.countPeople();
+        DefaultListModel dlm = new DefaultListModel();
+        dlm.addElement("Search to get a list of results");
+
+        jList1.setModel(dlm);
+        searchResults = null;
+        search = false;
+        cp = new Person();
+        clearInputs();
+        current = count + 1;
+        setPlayerButtons();
+        castInputToCurrentPerson();
     }// GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton4ActionPerformed
-        
+        try {
+            if (cp.getId() != null) {
+                ioLayer.deletePerson(cp);
+            }
+            if (search) {
+                searchResults.remove(cp);
+            }
+            cp = null;
+            count = search ? searchResults.size() : (int) ioLayer.countPeople();
+            if (count > 0) {
+                while (current > count) {
+                    current--;
+                }
+                setPerson(ioLayer.getPeople(1, current > 0 ? current - 1 : 0).get(0));
+                setPlayerButtons();
+            } else {
+                clearInputs();
+                current = 1;
+                setPlayerButtons();
+            }
+        } catch (SQLException ex) {
+
+        }
     }// GEN-LAST:event_jButton4ActionPerformed
 
     private void jPLZActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jPLZActionPerformed
