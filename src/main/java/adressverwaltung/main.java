@@ -21,6 +21,7 @@ import java.util.logging.Logger;
  * Main operator class
  *
  * @author Christof Weickhardt, Nicola Temporal
+ * @version Release 4
  */
 public class main {
 
