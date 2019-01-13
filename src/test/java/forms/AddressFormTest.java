@@ -106,6 +106,19 @@ public class AddressFormTest {
 
         faker = new Faker(new Locale("de-CH"));
 
+        Town t = new Town(4800, "Zofingen");
+        try {
+            long tid = io.saveTown(t);
+            p1 = new Person(faker.name().lastName(), faker.name().firstName(), faker.address().streetAddress(), tid, faker.phoneNumber().phoneNumber(), "0799069867", faker.internet().emailAddress());
+            p2 = new Person(faker.name().lastName(), faker.name().firstName(), faker.address().streetAddress(), tid, faker.phoneNumber().phoneNumber(), "0799069867", faker.internet().emailAddress());
+            p1id = io.savePerson(p1);
+            p2id = io.savePerson(p2);
+            p1.setId(p1id);
+            p2.setId(p2id);
+        } catch (SQLException ex) {
+            throw new Exception("Couldnt save town");
+        }
+
         try {
             af = new AddressForm(io);
         } catch (SQLException | CanNotConnectToDatabaseError ex) {
@@ -147,6 +160,8 @@ public class AddressFormTest {
         JTextField mobile = (JTextField) UIUtils.getChildNamed(af, "mobile");
         JTextField email = (JTextField) UIUtils.getChildNamed(af, "email");
 
+        JComboBox plz = (JComboBox) UIUtils.getChildNamed(af, "plz");
+
         JButton newOne = (JButton) UIUtils.getChildNamed(af, "newOne");
         JButton save = (JButton) UIUtils.getChildNamed(af, "save");
 
@@ -160,6 +175,8 @@ public class AddressFormTest {
         assertNotNull(mobile);
         assertNotNull(email);
 
+        assertNotNull(plz);
+
         newOne.doClick();
 
         assertEquals(lastname.getText(), "");
@@ -168,6 +185,7 @@ public class AddressFormTest {
         assertEquals(phone.getText(), "");
         assertEquals(mobile.getText(), "");
         assertEquals(email.getText(), "");
+        assertEquals(plz.getSelectedIndex(), 0);
 
         lastname.setText(faker.name().lastName());
         firstname.setText(faker.name().firstName());
@@ -175,6 +193,10 @@ public class AddressFormTest {
         phone.setText("0266753737");
         mobile.setText("0799069867");
         email.setText(faker.internet().emailAddress());
+
+        af.loadTowns();
+
+        plz.setSelectedItem(t.getPlz() + " " + t.getName());
 
         save.doClick();
 
@@ -206,6 +228,8 @@ public class AddressFormTest {
         lastname.setText(p1.getLastName());
         firstname.setText(p1.getFirstName());
         street.setText(p1.getAddress());
+
+        af.loadTowns();
 
         save.doClick();
 
@@ -254,6 +278,45 @@ public class AddressFormTest {
         previous.doClick();
 
         assertEquals("1/2", state.getText());
+    }
+
+    /**
+     * Updaing towns without loosing ui inputs
+     * @throws Exception
+     */
+    @Test
+    public void editTownWithoutLoosingInputs() throws Exception {
+        JTextField firstname = (JTextField) UIUtils.getChildNamed(af, "firstname");
+        JButton save = (JButton) UIUtils.getChildNamed(af, "save");
+        JComboBox plz = (JComboBox) UIUtils.getChildNamed(af, "plz");
+
+        assertNotNull(firstname);
+        assertNotNull(save);
+        assertNotNull(plz);
+
+        io.deletePerson(p2);
+
+        p1.setFirstName(faker.name().firstName());
+
+        Town t = new Town(3212, "Gurmels");
+
+        try {
+            io.saveTown(t);
+        } catch (SQLException ex) {
+            throw new Exception("Could not save town");
+        }
+
+        af.loadTowns();
+
+        firstname.setText(p1.getFirstName());
+        plz.setSelectedIndex(2);
+        p1.setOid(new Integer(io.searchTown(4800, "Zofingen").get(0).getTid() + ""));
+        save.doClick();
+
+        Person result = io.getPerson(p1.getId());
+
+        assertEquals(p1, result);
+
     }
 
     /**
