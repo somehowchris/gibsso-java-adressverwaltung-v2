@@ -9,10 +9,14 @@ import adressverwaltung.models.Person;
 
 import java.util.*;
 import java.io.File;
+import adressverwaltung.services.DatabaseService;
 import adressverwaltung.services.FileSystemService;
+import adressverwaltung.errors.CanNotConnectToDatabaseError;
 import adressverwaltung.models.Town;
 import adressverwaltung.enums.DotEnvEnum;
 import adressverwaltung.enums.SystemPropertyEnum;
+import adressverwaltung.errors.DatabaseSelfHealingError;
+import adressverwaltung.errors.WrongSchemaError;
 import java.sql.SQLException;
 import adressverwaltung.services.Service;
 
@@ -45,8 +49,37 @@ public class InOut {
      * which can not be accessed via the given inputs
      * @throws adressverwaltung.errors.DatabaseSelfHealingError if not possible to reconnect to healed database
      */
-    public InOut(HashMap<String, String> dotEnv) throws SQLException {
-        connection = new FileSystemService(home, SystemPropertyEnum.FILE_SEPERATOR.get());
+    public InOut(HashMap<String, String> dotEnv) throws SQLException, CanNotConnectToDatabaseError, DatabaseSelfHealingError {
+        if (dotEnv == null) {
+            dotEnv = new HashMap<>();
+        }
+        File dotEnvFile = new File(home);
+        if (dotEnvFile.exists() && dotEnv.isEmpty() ? !(dotEnv = DotEnv.getDotEnv()).isEmpty() : true) {
+            if (dotEnv.containsKey(DotEnvEnum.DB_USE.get()) && DotEnv.containsAllKeys(dotEnv)) {
+                switch (dotEnv.get(DotEnvEnum.DB_USE.get())) {
+                    case "true":
+                        try {
+                            MySQLConnection con = new MySQLConnection(dotEnv.get(DotEnvEnum.HOST.get()), dotEnv.get(DotEnvEnum.PASSWORD.get()), dotEnv.get(DotEnvEnum.TABLE_NAME.get()), dotEnv.get(DotEnvEnum.PORT.get()), dotEnv.get(DotEnvEnum.USER.get()), true, "mysql");
+                            if(con.verify()){
+                                connection = new DatabaseService(dotEnv);
+                                break;
+                            }
+                            throw new CanNotConnectToDatabaseError();
+                        } catch (WrongSchemaError ex) {
+
+                        }
+                    case "false":
+                        connection = new FileSystemService(home, SystemPropertyEnum.FILE_SEPERATOR.get());
+                        break;
+                    default:
+                        throw new CanNotConnectToDatabaseError();
+                }
+            } else {
+                connection = new FileSystemService(home, SystemPropertyEnum.FILE_SEPERATOR.get());
+            }
+        } else {
+            connection = new FileSystemService(home, SystemPropertyEnum.FILE_SEPERATOR.get());
+        }
     }
 
     /**
