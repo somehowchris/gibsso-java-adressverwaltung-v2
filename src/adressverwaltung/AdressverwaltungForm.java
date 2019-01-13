@@ -5,6 +5,7 @@
  */
 package adressverwaltung;
 
+import java.io.IOException;
 
 /**
  * Diese Klasse ist ein Form welches auf die Klasse JFrame zugreift um das main
@@ -14,6 +15,13 @@ package adressverwaltung;
  * @author Nicola Temporal
  */
 public class AdressverwaltungForm extends javax.swing.JFrame {
+
+    Adressverwaltung av;
+
+    public AdressverwaltungForm() {
+        initComponents();
+        av = new Adressverwaltung();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -278,11 +286,39 @@ public class AdressverwaltungForm extends javax.swing.JFrame {
     }// GEN-LAST:event_mobileTextActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveButtonActionPerformed
-
+        try {
+            av.setAnr(Integer.parseInt(idText.getText()));
+            av.setName(nameText.getText());
+            av.setVorname(firstNameText.getText());
+            av.setStrasse(streetText.getText());
+            av.setPlz((String) placeText.getSelectedItem());
+            av.setTelefon(telephoneText.getText());
+            av.setHandy(mobileText.getText());
+            av.setEmail(emailText.getText());
+            if (!av.getName().equals("")) {
+                av.Speichern();
+                saveButton.setEnabled(false);
+                deleteButton.setEnabled(true);
+            }
+        } catch (NumberFormatException e) {
+            nameText.setText("Fehler!");
+        } catch (IOException e) {
+            nameText.setText("Fehler!");
+        }
     }// GEN-LAST:event_saveButtonActionPerformed
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newButtonActionPerformed
-
+        idText.setText("");
+        nameText.setText("");
+        firstNameText.setText("");
+        streetText.setText("");
+        placeText.setSelectedItem(null);
+        telephoneText.setText("");
+        mobileText.setText("");
+        emailText.setText("");
+        saveButton.setEnabled(true);
+        deleteButton.setEnabled(false);
+        av = new Adressverwaltung();
     }// GEN-LAST:event_newButtonActionPerformed
 
     private void idTextActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_idTextActionPerformed
@@ -290,8 +326,64 @@ public class AdressverwaltungForm extends javax.swing.JFrame {
     }// GEN-LAST:event_idTextActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_searchButtonActionPerformed
+        try {
+            av = new Adressverwaltung(Integer.parseInt(idText.getText()));
+            nameText.setText(av.getName());
+            firstNameText.setText(av.getVorname());
+            streetText.setText(av.getStrasse());
+            placeText.setSelectedItem(av.getPlz());
+            telephoneText.setText(av.getTelefon());
+            mobileText.setText(av.getHandy());
+            emailText.setText(av.getEmail());
 
+            saveButton.setEnabled(false);
+            deleteButton.setEnabled(true);
+        } catch (Exception e) {
+            idText.setText("Fehler!");
+        }
     }// GEN-LAST:event_searchButtonActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        // <editor-fold defaultstate="collapsed" desc=" Look and feel setting code
+        // (optional) ">
+        /*
+         * If Nimbus (introduced in Java SE 6) is not available, stay with the default
+         * look and feel. For details see
+         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(AdressverwaltungForm.class.getName()).log(java.util.logging.Level.SEVERE,
+                    null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(AdressverwaltungForm.class.getName()).log(java.util.logging.Level.SEVERE,
+                    null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(AdressverwaltungForm.class.getName()).log(java.util.logging.Level.SEVERE,
+                    null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(AdressverwaltungForm.class.getName()).log(java.util.logging.Level.SEVERE,
+                    null, ex);
+        }
+        // </editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new AdressverwaltungForm().setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel adressNummer;
