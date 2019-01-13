@@ -5,6 +5,8 @@
  */
 package adressverwaltung;
 
+import adressverwaltung.errors.CanNotConnectToDatabaseError;
+import adressverwaltung.errors.DatabaseSelfHealingError;
 import adressverwaltung.forms.AddressForm;
 import adressverwaltung.utils.DotEnv;
 import adressverwaltung.utils.InOut;
@@ -44,6 +46,10 @@ public class main {
             
         } catch (SQLException ex) {
             Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CanNotConnectToDatabaseError ex) {
+            Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DatabaseSelfHealingError ex) {
+            main(null);
         }
 
     }
@@ -60,9 +66,12 @@ public class main {
             io = new InOut(connection);
             af = new AddressForm(io);
             return true;
-        } catch ( SQLException ex) {
+        } catch (CanNotConnectToDatabaseError | SQLException ex) {
             return false;
-        } 
+        } catch (DatabaseSelfHealingError ex) {
+            setupConnection(connection);
+            return true;
+        }
     }
 
     /**
@@ -72,7 +81,7 @@ public class main {
      * @throws CanNotConnectToDatabaseError If not able to connect to the
      * database
      */
-    public static void viewAdressForm() throws SQLException{
+    public static void viewAdressForm() throws SQLException, CanNotConnectToDatabaseError {
         if (af == null) {
             af = new AddressForm(io);
         }

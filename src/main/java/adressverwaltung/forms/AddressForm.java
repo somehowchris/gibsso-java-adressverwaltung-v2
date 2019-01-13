@@ -5,6 +5,9 @@
  */
 package adressverwaltung.forms;
 
+import adressverwaltung.errors.CanNotConnectToDatabaseError;
+import adressverwaltung.errors.DatabaseSelfHealingError;
+import adressverwaltung.main;
 import adressverwaltung.utils.InOut;
 import adressverwaltung.models.Person;
 import adressverwaltung.utils.CustomFocusTraversalPolicy;
@@ -16,8 +19,10 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -46,14 +51,18 @@ public class AddressForm extends javax.swing.JFrame {
      * @throws SQLException throws a exception if needed
      * @throws CanNotConnectToDatabaseError adressverwaltung.errors.
      */
-    public AddressForm(InOut io) throws SQLException {
+    public AddressForm(InOut io) throws SQLException, CanNotConnectToDatabaseError {
         initComponents();
         this.setTitle("Adressverwaltung");
         if (io != null) {
             ioLayer = io;
         }
         if (io == null) {
-            ioLayer = new InOut(null);
+            try {
+                ioLayer = new InOut(null);
+            } catch (DatabaseSelfHealingError ex) {
+                throw new CanNotConnectToDatabaseError();
+            }
         }
 
         ArrayList<Component> comp = new ArrayList<>();
