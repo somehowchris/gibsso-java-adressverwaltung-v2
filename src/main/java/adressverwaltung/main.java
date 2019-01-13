@@ -7,6 +7,7 @@ package adressverwaltung;
 
 import adressverwaltung.errors.CanNotConnectToDatabaseError;
 import adressverwaltung.errors.DatabaseSelfHealingError;
+import adressverwaltung.forms.ConnectionForm;
 import adressverwaltung.forms.AddressForm;
 import adressverwaltung.utils.DotEnv;
 import adressverwaltung.utils.InOut;
@@ -19,9 +20,13 @@ import java.util.logging.Logger;
  * Main operator class
  *
  * @author Christof Weickhardt, Nicola Temporal
- * @version Release 3
  */
 public class main {
+
+    /**
+     * Static available connection form
+     */
+    public static ConnectionForm cn;
 
     /**
      * Static available io
@@ -40,15 +45,18 @@ public class main {
         try {
             io = new InOut(null);
 
+            cn = new ConnectionForm();
+
             af = new AddressForm(io);
             if (DotEnv.getDotEnv().keySet().contains("DATABASE_USE")) {
                 af.setVisible(true);
+            } else {
+                cn.setVisible(true);
             }
-
         } catch (SQLException ex) {
             Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (CanNotConnectToDatabaseError ex) {
-            Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+            viewConnectionSettings();
         } catch (DatabaseSelfHealingError ex) {
             main(null);
         }
@@ -59,11 +67,13 @@ public class main {
      * Function to setup a new Connection
      *
      * @param connection Key value pair list of connection information
-     * @return Returns a boolean true if the connection is successfully established
+     * @return Returns a boolean true if the connection is successfully
+     * established
      */
     public static boolean setupConnection(HashMap<String, String> connection) {
         try {
             io = new InOut(connection);
+            cn.setVisible(false);
             af = new AddressForm(io);
             return true;
         } catch (CanNotConnectToDatabaseError | SQLException ex) {
@@ -77,9 +87,9 @@ public class main {
     /**
      * Function to distplay the adress form
      *
-     * @throws SQLException                 If not able to get informations from the
-     *                                      database
-     * @throws CanNotConnectToDatabaseError If not able to connect to the database
+     * @throws SQLException If not able to get informations from the database
+     * @throws CanNotConnectToDatabaseError If not able to connect to the
+     * database
      */
     public static void viewAdressForm() throws SQLException, CanNotConnectToDatabaseError {
         if (af == null) {
@@ -87,5 +97,20 @@ public class main {
         }
         af.setVisible(true);
         af.requestFocus();
+
+        if (cn != null) {
+            cn.setVisible(false);
+        }
+    }
+
+    /**
+     * Function to view the connection settings
+     */
+    public static void viewConnectionSettings() {
+        if (cn == null) {
+            cn = new ConnectionForm();
+        }
+        cn.setVisible(true);
+        cn.requestFocus();
     }
 }
