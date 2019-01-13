@@ -26,14 +26,17 @@ public class Adress {
     private String telefon;
     private String handy;
     private String email;
-
+    
+    
+    
+    
     public Adress() {
-
+        
     }
-
+    
     public Adress(int anr) throws FileNotFoundException, IOException {
         this.anr = anr;
-        BufferedReader f = new BufferedReader(new FileReader(Integer.toString(anr) + ".person"));
+        BufferedReader f  = new BufferedReader( new FileReader(Integer.toString(anr)+".person"));
         this.name = f.readLine();
         this.vorname = f.readLine();
         this.strasse = f.readLine();
@@ -43,23 +46,23 @@ public class Adress {
         this.email = f.readLine();
         f.close();
     }
-
+    
     public void setAnr(int anr) {
-        this.anr = anr;
+        this.anr=anr;
     }
-
+    
     public void setName(String name) {
-        this.name = name;
+        this.name=name;
     }
-
+    
     public String getName() {
         return this.name;
     }
-
+    
     public void setVorname(String vorname) {
-        this.vorname = vorname;
+        this.vorname=vorname;
     }
-
+    
     public String getVorname() {
         return this.vorname;
     }
@@ -103,10 +106,11 @@ public class Adress {
     public void setTelefon(String telefon) {
         this.telefon = telefon;
     }
+    
 
     public void Speichern() throws IOException {
-        FileOutputStream outx = new FileOutputStream(Integer.toString(anr) + ".person", false);
-        PrintStream out = new PrintStream(outx);
+        FileOutputStream outx = new FileOutputStream(Integer.toString(anr)+".person", false);
+	PrintStream out = new PrintStream(outx);
         out.println(name);
         out.println(vorname);
         out.println(strasse);
@@ -114,7 +118,7 @@ public class Adress {
         out.println(telefon);
         out.println(handy);
         out.println(email);
-
+        
         out.close();
     }
 }

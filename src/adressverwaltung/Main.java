@@ -13,5 +13,5 @@ public class Main {
     public static void main(String[] args) {
         AdressverwaltungForm form = new AdressverwaltungForm();
         form.setVisible(true);
-    }
+    }    
 }
