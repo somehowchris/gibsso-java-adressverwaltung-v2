@@ -5,6 +5,7 @@
  */
 package adressverwaltung;
 
+import adressverwaltung.forms.AddressForm;
 import java.sql.SQLException;
 import java.util.HashMap;
 
