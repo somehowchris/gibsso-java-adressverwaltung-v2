@@ -6,6 +6,7 @@
 package utils;
 
 import adressverwaltung.enums.DotEnvEnum;
+import adressverwaltung.errors.CanNotConnectToDatabaseError;
 import adressverwaltung.models.Person;
 import adressverwaltung.models.Town;
 import adressverwaltung.utils.InOut;
@@ -60,7 +61,7 @@ public class InOutTest {
             HashMap<String, String> fakeKeys = new HashMap<>();
             fakeKeys.put(DotEnvEnum.DB_USE.get(), "false");
             io = new InOut(fakeKeys);
-        } catch (SQLException ex) {
+        } catch (SQLException | CanNotConnectToDatabaseError ex) {
             throw new Exception("Could not create read or write stream to file system");
         }
     }
