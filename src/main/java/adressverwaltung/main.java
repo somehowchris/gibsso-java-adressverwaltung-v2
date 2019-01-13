@@ -7,6 +7,7 @@ package adressverwaltung;
 
 import adressverwaltung.errors.CanNotConnectToDatabaseError;
 import adressverwaltung.errors.DatabaseSelfHealingError;
+import adressverwaltung.forms.TownForm;
 import adressverwaltung.forms.ConnectionForm;
 import adressverwaltung.forms.AddressForm;
 import adressverwaltung.utils.DotEnv;
@@ -39,6 +40,11 @@ public class main {
     public static AddressForm af;
 
     /**
+     * Static available town form
+     */
+    public static TownForm tf;
+
+    /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -48,6 +54,8 @@ public class main {
             cn = new ConnectionForm();
 
             af = new AddressForm(io);
+
+            tf = new TownForm(io);
             if (DotEnv.getDotEnv().keySet().contains("DATABASE_USE")) {
                 af.setVisible(true);
             } else {
@@ -75,6 +83,7 @@ public class main {
             io = new InOut(connection);
             cn.setVisible(false);
             af = new AddressForm(io);
+            tf = new TownForm(io);
             return true;
         } catch (CanNotConnectToDatabaseError | SQLException ex) {
             return false;
@@ -101,6 +110,31 @@ public class main {
         if (cn != null) {
             cn.setVisible(false);
         }
+        if (tf != null) {
+            tf.setVisible(false);
+        }
+    }
+
+    /**
+     * Function to display the town form
+     *
+     * @throws CanNotConnectToDatabaseError If not able to connect to the
+     * database
+     * @throws SQLException If not able to get informations from the database
+     */
+    public static void viewTownForm() throws CanNotConnectToDatabaseError, SQLException {
+        if (tf == null) {
+            tf = new TownForm(io);
+        }
+        tf.setVisible(true);
+        tf.requestFocus();
+
+        if (cn != null) {
+            cn.setVisible(false);
+        }
+        if (af != null) {
+            af.setVisible(false);
+        }
     }
 
     /**
@@ -112,5 +146,12 @@ public class main {
         }
         cn.setVisible(true);
         cn.requestFocus();
+
+        if (tf != null) {
+            tf.setVisible(false);
+        }
+        if (tf != null) {
+            af.setVisible(false);
+        }
     }
 }
